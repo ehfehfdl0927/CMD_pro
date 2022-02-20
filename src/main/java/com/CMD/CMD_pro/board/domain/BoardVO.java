@@ -15,9 +15,7 @@ public class BoardVO {
     private int recommend;
     private String real_date;
 
-    public int getBno() {
-        return bno;
-    }
+    public int getBno() { return bno; }
 
     public void setBno(int bno) {
         this.bno = bno;

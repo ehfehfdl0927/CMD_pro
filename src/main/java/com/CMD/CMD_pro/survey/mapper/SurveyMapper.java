@@ -1,6 +1,7 @@
 package com.CMD.CMD_pro.survey.mapper;
 
 import com.CMD.CMD_pro.survey.domain.*;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,6 +22,8 @@ public interface SurveyMapper {
     public void closeSurvey(int survey_index);
     public void removeSurvey(int survey_index);
     public SurveyItemVO selectMySurveyResult(int survey_index, int user_index);
+
+    public int existsVote(@Param("surveyIndex") int surveyIndex, @Param("userIndex") int userIndex);
 //    public List<SurveyVO> selectSearchSurvey(SearchCriteria cri);
 //    public void searchInsert(@Param("keyword") String keyword) throws Exception;
 //    public List<SurveyVO> mainSearch(@Param("keyword") String keyword) throws Exception;

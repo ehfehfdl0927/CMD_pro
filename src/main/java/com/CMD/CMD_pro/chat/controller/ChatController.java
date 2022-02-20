@@ -21,10 +21,15 @@ import java.util.concurrent.Callable;
 
 @Controller
 public class ChatController {
+
+    private final UserMapper userMapper;
+    private final ChatMapper chatMapper;
+
     @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private ChatMapper chatMapper;
+    public ChatController(UserMapper userMapper, ChatMapper chatMapper) {
+        this.userMapper = userMapper;
+        this.chatMapper = chatMapper;
+    }
 
     @GetMapping("/friendsList")
     public String friendsList(HttpSession session, Model model) throws Exception {

@@ -18,10 +18,15 @@ import java.util.*;
 //@RequestMapping("/survey/*") //현재 믈래스의 모든 메서드들의 기본적인 URL경로
 public class SurveyController {
 
+
+    private final UserMapper userMapper;
+    private final SurveyMapper surveyMapper;
+
     @Autowired
-    private UserMapper userMapper;
-    @Autowired
-    private SurveyMapper surveyMapper;
+    public SurveyController(UserMapper userMapper, SurveyMapper surveyMapper) {
+        this.userMapper = userMapper;
+        this.surveyMapper = surveyMapper;
+    }
 
     @RequestMapping(value = "/mainSurvey", method = RequestMethod.GET) //설문조사 메인화면
     public String mainSurvey(@ModelAttribute("cri") SearchCriteria cri, Model model, HttpSession session) throws Exception {
@@ -218,32 +223,38 @@ public class SurveyController {
         return "redirect:/mainSurvey";
     }
 
-    @RequestMapping(value="voteSurvey", method = RequestMethod.POST) //설문조사 참여하기
-    public @ResponseBody Map<String, Object> insertSurveyResult
-            ( HttpServletRequest req,HttpSession session) throws Exception{
 
+    @ResponseBody
+    @RequestMapping(value = "/voteSurvey", method = RequestMethod.POST)
+    public int insertSurveyResult(HttpServletRequest req,HttpSession session) throws Exception{
         String userID;
         userID = (String) session.getAttribute("id");
         UserVO user = userMapper.userLogin(userID);
         int userIndex = user.getUser_index();
         String index = req.getParameter("index");
-        String survey = req.getParameter("survey");
-        System.out.println(index + survey);
-        SurveyResultVO surveyResultVO = new SurveyResultVO();
-        Map<String, Object> return_param = new HashMap<>();
-        try {
-            surveyResultVO.setSurvey_item_index(Integer.parseInt(survey));
-            surveyResultVO.setUser_index(userIndex);
-            surveyResultVO.setSurvey_index(Integer.parseInt(index));
-            surveyMapper.insertSurveyResult(surveyResultVO);
-            return_param.put("result", true);
-            return_param.put("message", "설문에 참여하였습니다.");
-        } catch (Exception e) {
-            return_param.put("result", false);
-            return_param.put("message", "이미 설문에 참여하였습니다.");
-            return return_param;
+        int surveyIndex = Integer.parseInt(index);
+
+        if(req.getParameter("survey") == null){
+            return -1;
         }
-        return return_param;
+        String survey = req.getParameter("survey");
+
+        int result = 0;
+
+        int exists = surveyMapper.existsVote(surveyIndex,userIndex);
+        if(exists == 1){
+         return result;
+        } else {
+
+        SurveyResultVO surveyResultVO = new SurveyResultVO();
+        surveyResultVO.setSurvey_item_index(Integer.parseInt(survey));
+        surveyResultVO.setUser_index(userIndex);
+        surveyResultVO.setSurvey_index(surveyIndex);
+        surveyMapper.insertSurveyResult(surveyResultVO);
+        result = 1;
+        return result;
+        }
+
     }
 
     @RequestMapping("/removeSurvey") //설문조사 지우기
@@ -314,4 +325,5 @@ public class SurveyController {
         model.addAttribute("testList",doubleList);
         return "test";
     }
+
 }

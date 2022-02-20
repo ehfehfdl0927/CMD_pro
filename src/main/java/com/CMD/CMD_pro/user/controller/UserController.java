@@ -36,8 +36,13 @@ import java.util.Random;
 
 @Controller
 public class UserController {
+
+    private final UserMapper userMapper;
+
     @Autowired
-    private UserMapper userMapper;
+    public UserController(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
 
     @Autowired
     private JavaMailSender sender;
@@ -110,7 +115,6 @@ public class UserController {
     public String loginAction(Model model, JoinForm form, HttpServletRequest request)throws Exception {
         String userID = form.getUser_id();
         String userPassword = form.getUser_pwd();
-        System.out.println(userID);
         UserVO user = userMapper.userLogin(userID);
         if(user != null){
             if(user.getUser_pwd().equals(userPassword)){
@@ -416,6 +420,8 @@ public class UserController {
             return "alert";
         }
     }
+
+
 
 
 }

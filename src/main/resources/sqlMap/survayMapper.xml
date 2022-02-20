@@ -132,4 +132,8 @@
         WHERE surveyResult.survey_item_index = #{survey_item_index};
     </select>
 
+    <select id="existsVote" parameterType="map" resultType="int">
+        select EXISTS (select survey_index from surveyResult where survey_index = #{surveyIndex} and user_index = #{userIndex}) as success;
+    </select>
+
 </mapper>

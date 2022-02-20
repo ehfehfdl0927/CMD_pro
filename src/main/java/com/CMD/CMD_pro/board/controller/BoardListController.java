@@ -27,19 +27,20 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-//@RestController
+
 @Controller
 public class BoardListController {
-    @Autowired
-    private BoardMapper boardMapper; //게시물 관련 메퍼인터페이스
-    @Autowired
-    private UserMapper userMapper;
 
-    //@RequestMapping("/board") //게시물 리스트 가져오기 글목록
-    //public List<BoardVO> board() throws Exception{
-       // List<BoardVO> board = boardMapper.boardList(); //게시물 메퍼에 boardList 메소드 실행후 결과 담기
-       // return board;
-    //}
+    private final BoardMapper boardMapper;
+    private final  UserMapper userMapper;
+
+    @Autowired
+    public BoardListController(BoardMapper boardMapper, UserMapper userMapper) {
+        this.boardMapper = boardMapper;
+        this.userMapper = userMapper;
+    }
+
+
 
     @GetMapping("/board")  //게시물 리스트 가져오기 get방식
     public String list(HttpServletRequest request, Model model, @RequestParam("kind") String kind, @RequestParam("realm") String realm, HttpSession session) throws Exception{
@@ -130,7 +131,8 @@ public class BoardListController {
     }
 
     @PostMapping("board")   //게시물 리스트 가져오기 post방식 글쓰기 완료후 폼 액션
-    public String WriteAction(WriteForm form, RedirectAttributes redirect, HttpSession session, Model model, @RequestPart MultipartFile files, HttpServletRequest request) throws Exception{
+    public String WriteAction(WriteForm form, RedirectAttributes redirect, HttpSession session, Model model,
+                              @RequestPart MultipartFile files, HttpServletRequest request) throws Exception{
         BoardVO board = new BoardVO();
         board.setWriter(form.getWriter());  //BoardVO형 도메인 모델에 폼 데이터 담기
         board.setSubject(form.getSubject());
@@ -138,7 +140,7 @@ public class BoardListController {
         String notice = form.getNotice();
         int board_bno = form.getBno();
         String userID = (String) session.getAttribute("id");
-        UserVO user = userMapper.userLogin(userID);
+        UserVO user = userMapper.userLogin(userID); //로그인한 회원 아이디세션값으로 권한확인
         if(notice == null){
             board.setNotice(0);
         } else{
@@ -154,14 +156,14 @@ public class BoardListController {
         board.setKind(form.getKind());
         board.setRealm(form.getRealm());
 
-        boardMapper.boardInsert(board);
+        boardMapper.boardInsert(board); //사용자 작성글 db에 추가
 
             String fileName = files.getOriginalFilename();
             String fileNameExtension = FilenameUtils.getExtension(fileName).toLowerCase();
             File destinationFile;
             String destinationFileName;
             String fileUrl = "C:\\test1\\";
-            do{
+            do{ //파일 업로드
             destinationFileName = RandomStringUtils.randomAlphanumeric(32) + "." + fileNameExtension;
             destinationFile = new File(fileUrl + destinationFileName);
 
@@ -173,11 +175,11 @@ public class BoardListController {
         file.setFilename(destinationFileName);
         file.setFileoriginname(fileName);
         file.setFileurl(fileUrl);
-        boardMapper.fileInsert(file);
+        boardMapper.fileInsert(file); //파일db에 사용자가 업로드한 파일등록
 
-        redirect.addAttribute("kind", form.getKind());
-        redirect.addAttribute("realm", form.getRealm());
-        return "redirect:/board";
+        redirect.addAttribute("kind", form.getKind()); //kind 라는 파라미터name으로 입력 폼값전달
+        redirect.addAttribute("realm", form.getRealm()); //realm 라는 파라미터name으로 입력 폼값전달
+        return "redirect:/board"; //GetMapping의 ("/board") URL 매핑되있는 함수 실행
     }
     @GetMapping("/write")                  //글쓰기
     public String write(@RequestParam("kind") String kind, @RequestParam("realm") String realm, Model model, HttpSession session) throws Exception{
